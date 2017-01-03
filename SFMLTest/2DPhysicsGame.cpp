@@ -7,9 +7,11 @@
 using namespace std;
 
 const float SCALE = 5.f;
+const float DEGTORAD = (b2_pi / 180);
 
 void CreateGround(b2World& world, float X, float Y);
 void CreateBox(b2World& world, int MouseX, int MouseY);
+void Particles(b2World& world, int MouseX, int MouseY);
 
 int main()
 {
@@ -32,27 +34,50 @@ int main()
 	groundTex.loadFromFile("Assets\\Texture\\groundtexture.bmp");
 	boxTex.loadFromFile("Assets\\Texture\\boxtexture2.bmp");
 
+	//sf::CircleShape shape(100.f);
+	//shape.setFillColor(sf::Color::Green);
 
-	/*sf::CircleShape shape(100.f);
-	shape.setFillColor(sf::Color::Green);*/
+	cout << "Press B for Allahuakbar\n";
 
+	window.setKeyRepeatEnabled(false);
 
 	while (window.isOpen())
 	{
-		if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+		//if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+		//{
+		//	int MouseX = sf::Mouse::getPosition(window).x;
+		//	int MouseY = sf::Mouse::getPosition(window).y;
+		//	CreateBox(world, MouseX, MouseY);
+		//}
+
+
+		sf::Event event;
+		while (window.pollEvent(event))
 		{
-			int MouseX = sf::Mouse::getPosition(window).x;
-			int MouseY = sf::Mouse::getPosition(window).y;
-			CreateBox(world, MouseX, MouseY);
-			cout << "CreateBox Called\n";
-			//system("pause");
+			switch (event.type)
+			{
+			case sf::Event::Closed:
+			{
+				if (event.type == sf::Event::Closed)
+					window.close();
+				break;
+			}
+			case sf::Event::KeyPressed:
+
+				if (sf::Keyboard::isKeyPressed(sf::Keyboard::B))
+				{
+					int MouseX = sf::Mouse::getPosition(window).x;
+					int MouseY = sf::Mouse::getPosition(window).y;
+					Particles(world, MouseX, MouseY);
+				}
+			}
 		}
 
-		world.Step(1 / 60.f, 8, 9);
+		world.Step(1 / 60.f, 8, 10);
 
 		window.clear();
 
-		int BodyCount = 0;
+		//int BodyCount = 0;
 
 		for (b2Body* BodyIterator = world.GetBodyList(); BodyIterator != 0; BodyIterator = BodyIterator->GetNext())
 		{
@@ -60,12 +85,13 @@ int main()
 			{
 				sf::Sprite sprite;
 				sprite.setTexture(boxTex);
+				sprite.setColor(sf::Color::Red);
 				sprite.setOrigin(16.f, 16.f);
 				sprite.setPosition(SCALE * BodyIterator->GetPosition().x, SCALE * BodyIterator->GetPosition().y);
 				sprite.setRotation(BodyIterator->GetAngle() * 180 / b2_pi);
 				window.draw(sprite);
-				cout << "Sprite Drawn\n";
-				++BodyCount;
+				//cout << "Sprite Drawn\n";
+				//++BodyCount;
 			}
 			else
 			{
@@ -78,12 +104,12 @@ int main()
 			}
 		}
 
-		sf::Event event;
-		while (window.pollEvent(event))
-		{
-			if (event.type == sf::Event::Closed)
-				window.close();
-		}
+		//sf::Event event;
+		//while (window.pollEvent(event))
+		//{
+		//	if (event.type == sf::Event::Closed)
+		//		window.close();
+		//}
 
 		//window.draw(shape);
 		//window.clear();
@@ -122,4 +148,43 @@ void CreateBox(b2World& world, int MouseX, int MouseY)
 	FixDef.shape = &Shape;
 	Body->CreateFixture(&FixDef);
 	cout << "CreateBox Completed\n";
+}
+
+void Particles(b2World& world, int MouseX, int MouseY)
+{
+	int numRays = 18;
+	float blastPower = 200.f;
+	for (int i = 0; i < numRays; i++)
+	{
+		float ii = i; //somehow the formula only works like this
+		float angle = (ii / numRays) * 360; //getting the angle for each particle
+		b2Vec2 rayDir(sinf(angle), cosf(angle));
+
+		cout << i << " " << ii << " "<< angle << endl;
+
+		b2BodyDef bodyDef;
+		bodyDef.type = b2_dynamicBody;
+		bodyDef.fixedRotation = true;
+		bodyDef.bullet = true;
+		bodyDef.linearDamping = 0.8f;
+		bodyDef.gravityScale = 0;
+		bodyDef.position = b2Vec2(MouseX / SCALE, MouseY / SCALE);
+		bodyDef.linearVelocity = blastPower * rayDir;
+		b2Body* body = world.CreateBody(&bodyDef);
+
+		//b2CircleShape circleShape; //shape definition
+		//circleShape.m_radius = 0.05f; //circle radius
+
+		b2PolygonShape Shape; //shape defintion
+		Shape.SetAsBox(0.5f, 0.5f);
+
+		b2FixtureDef fixDef;
+		fixDef.shape = &Shape;
+		fixDef.density = 30.f / numRays;
+		fixDef.friction = 0;
+		fixDef.restitution = 0.99f; //Affects the reflection off of surfaces
+		fixDef.filter.groupIndex = 0; //Particle collision Pos values for collision, Neg values for no collision
+		body->CreateFixture(&fixDef);
+		
+	}
 }
