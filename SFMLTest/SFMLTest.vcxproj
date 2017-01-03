@@ -170,8 +170,8 @@
     <ResourceCompile Include="2DPhysicsGame1.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="Assets\Texture\boxtexture.bmp" />
     <Image Include="Assets\Texture\boxtexture2.bmp" />
+    <Image Include="Assets\Texture\groundtexture.bmp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

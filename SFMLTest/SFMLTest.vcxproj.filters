@@ -36,10 +36,10 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="Assets\Texture\boxtexture.bmp">
+    <Image Include="Assets\Texture\boxtexture2.bmp">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="Assets\Texture\boxtexture2.bmp">
+    <Image Include="Assets\Texture\groundtexture.bmp">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
