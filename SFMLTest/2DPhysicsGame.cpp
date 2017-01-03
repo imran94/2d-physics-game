@@ -1,6 +1,5 @@
 // SFMLTest.cpp : Defines the entry point for the console application.
 //
-#include "stdafx.h"
 #include <SFML\Graphics.hpp>
 #include <Box2D/Box2D.h>
 #include <iostream>
