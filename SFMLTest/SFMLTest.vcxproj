@@ -160,6 +160,7 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Player.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="resource1.h" />
   </ItemGroup>
@@ -172,6 +173,7 @@
   <ItemGroup>
     <Image Include="Assets\Texture\boxtexture2.bmp" />
     <Image Include="Assets\Texture\groundtexture.bmp" />
+    <Image Include="Assets\Texture\Player.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
