@@ -158,7 +158,6 @@ int main()
 			leftKeyPressed = false;
 		}
 
-
 		sf::Event event;
 		while (window.pollEvent(event))
 		{
@@ -195,8 +194,6 @@ int main()
 			}
 		}
 
-		window.clear();
-
 		for (b2Body* BodyIterator = world.GetBodyList(); BodyIterator != 0; BodyIterator = BodyIterator->GetNext())
 		{
 			if (BodyIterator->GetType() == b2_dynamicBody)
@@ -207,6 +204,7 @@ int main()
 				sprite.setOrigin(16.f, 16.f);
 				sprite.setPosition(SCALE * BodyIterator->GetPosition().x, SCALE * BodyIterator->GetPosition().y);
 				sprite.setRotation(BodyIterator->GetAngle() * 180 / b2_pi);
+				sprite.setScale(0.5f, 0.5f);
 				window.draw(sprite);
 			}
 			else
@@ -219,7 +217,6 @@ int main()
 				window.draw(groundSprite);
 			}
 		}
-		
 		window.display();
 	}
     return 0;
