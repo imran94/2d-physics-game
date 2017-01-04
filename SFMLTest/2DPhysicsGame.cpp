@@ -5,30 +5,11 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include "Entity.h"
+#include "Ground.h"
+#include "Box.h"
 
 using namespace std;
-
-class Entity {
-public:
-	b2Body* Body;
-	bool toBeDestroyed;
-
-public:
-	virtual void setInactive()
-	{
-		Body->SetActive(false);
-	}
-
-	b2World* getWorld()
-	{
-		return Body->GetWorld();
-	}
-
-	~Entity()
-	{
-		Body->GetWorld()->DestroyBody(Body);
-	}
-};
 
 const float SCALE = 5.f;
 const float DEGTORAD = (b2_pi / 180);
@@ -36,51 +17,6 @@ const float DEGTORAD = (b2_pi / 180);
 void CreateGround(b2World& world, float X, float Y);
 void CreateBox(b2World& world, int MouseX, int MouseY);
 void Particles(b2World& world, int MouseX, int MouseY);
-
-class Box : public Entity {
-public:
-	Box(b2World &world, int x, int y, int index)
-	{
-		b2BodyDef BodyDef;
-		BodyDef.position = b2Vec2(x / SCALE, y / SCALE); //Spawn Position
-		BodyDef.type = b2_dynamicBody; //Dynamic body
-		Body = world.CreateBody(&BodyDef);
-
-		b2PolygonShape Shape; //shape defintion
-		Shape.SetAsBox(3.f, 3.f);
-		b2FixtureDef FixDef; //fixture definition
-		FixDef.density = 1.f;
-		FixDef.friction = 0.5f;
-		FixDef.shape = &Shape;
-		Body->CreateFixture(&FixDef);
-		Body->SetUserData((void*)index);
-		cout << "Box Body created at " << Body << endl;
-
-		toBeDestroyed = false;
-	}
-};
-
-class Ground : public Entity {
-public:
-	Ground(b2World& world, float X, float Y, int index)
-	{
-		b2BodyDef BodyDef;
-		BodyDef.position = b2Vec2(X / 3.f, Y / 5.f);
-		BodyDef.type = b2_staticBody;
-		Body = world.CreateBody(&BodyDef);
-
-		b2PolygonShape Shape;
-		Shape.SetAsBox((700.f / 2) / SCALE, (16.f / 2) / SCALE);
-		b2FixtureDef fixDef;
-		fixDef.density = 0.f;
-		fixDef.shape = &Shape;
-		Body->CreateFixture(&fixDef);
-		Body->SetUserData((void*)index);
-		cout << "Ground Body created at " << Body << endl;
-
-		toBeDestroyed = false;
-	}
-};
 
 std::vector<Entity*> entities;
 
