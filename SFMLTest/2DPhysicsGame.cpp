@@ -11,7 +11,6 @@ using namespace std;
 class Entity {
 public:
 	b2Body* Body;
-	bool contacting;
 	bool toBeDestroyed;
 
 public:
@@ -42,8 +41,6 @@ class Box : public Entity {
 public:
 	Box(b2World &world, int x, int y, int index)
 	{
-		contacting = false;
-
 		b2BodyDef BodyDef;
 		BodyDef.position = b2Vec2(x / SCALE, y / SCALE); //Spawn Position
 		BodyDef.type = b2_dynamicBody; //Dynamic body
@@ -57,7 +54,7 @@ public:
 		FixDef.shape = &Shape;
 		Body->CreateFixture(&FixDef);
 		Body->SetUserData((void*)index);
-		cout << "CreateBox index: ";
+		cout << "Box Body created at " << Body << endl;
 
 		toBeDestroyed = false;
 	}
@@ -67,12 +64,10 @@ class Ground : public Entity {
 public:
 	Ground(b2World& world, float X, float Y, int index)
 	{
-		contacting = false;
-
 		b2BodyDef BodyDef;
 		BodyDef.position = b2Vec2(X / 3.f, Y / 5.f);
 		BodyDef.type = b2_staticBody;
-		b2Body* Body = world.CreateBody(&BodyDef);
+		Body = world.CreateBody(&BodyDef);
 
 		b2PolygonShape Shape;
 		Shape.SetAsBox((700.f / 2) / SCALE, (16.f / 2) / SCALE);
@@ -81,7 +76,8 @@ public:
 		fixDef.shape = &Shape;
 		Body->CreateFixture(&fixDef);
 		Body->SetUserData((void*)index);
-		
+		cout << "Ground Body created at " << Body << endl;
+
 		toBeDestroyed = false;
 	}
 };
@@ -93,20 +89,22 @@ class MyContactListener : public b2ContactListener {
 	{	
 		// Get first fixture in contact
 		int index = (int)contact->GetFixtureA()->GetBody()->GetUserData();
-		Entity* e = entities[index];
-		string s = typeid(*e).name();
-		cout << "Entity type: " << s << ", address: " << e << endl;
-		
-		e->toBeDestroyed = true;
+		Entity* e1 = entities[index];
+		string s = typeid(*e1).name();
+		cout << s <<  " Body address: " << e1->Body << endl;
+		//b2World* w1 = e1->getWorld();
+
+		e1->toBeDestroyed = true;
 
 		// Get other fixture in contact
 		index = (int)contact->GetFixtureB()->GetBody()->GetUserData();
-		e = entities[index];
-		s = typeid(*e).name();
-		cout << "Entity type: " << s << ", address: " << e << endl;
-		b2World* w = e->getWorld();
+		Entity* e2 = entities[index];
+		s = typeid(*e2).name();
+		cout << s << " Body address: " << e2->Body << endl;
+		//b2World* w2 = e2->getWorld();
 
-		e->toBeDestroyed = true;
+
+		e2->toBeDestroyed = true;
 	}
 
 	void EndContact(b2Contact* contact)
@@ -124,7 +122,7 @@ int main()
 	b2World world(gravity);
 	CreateGround(world, 400.f, 500.f);
 
-	sf::RenderWindow window(sf::VideoMode(1280, 720, 32), "YPWong is a nigger");
+	sf::RenderWindow window(sf::VideoMode(1280, 720, 32), "Bomb Survival");
 	window.setFramerateLimit(60);
 	
 	//Load Texture
@@ -150,6 +148,7 @@ int main()
 				int MouseX = sf::Mouse::getPosition(window).x;
 				int MouseY = sf::Mouse::getPosition(window).y;
 				CreateBox(world, MouseX, MouseY);
+				Particles(world, MouseX, MouseY);
 				leftKeyPressed = true;
 			}
 		}
@@ -189,11 +188,17 @@ int main()
 			if (e->toBeDestroyed)
 			{
 				// This shit is causing a crash for some reason
-				//world.DestroyBody(e->Body);
+				//b2World* w = b->GetWorld();
+				b2Body* b = e->Body;
+				cout << b << " to be destroyed\n";
+
+				world.DestroyBody(e->Body);
+
 				e->toBeDestroyed = false;
 			}
 		}
 
+		cout << world.GetBodyCount();
 		for (b2Body* BodyIterator = world.GetBodyList(); BodyIterator != 0; BodyIterator = BodyIterator->GetNext())
 		{
 			if (BodyIterator->GetType() == b2_dynamicBody)
@@ -218,6 +223,7 @@ int main()
 			}
 		}
 		window.display();
+		window.clear();
 	}
     return 0;
 }
@@ -231,7 +237,7 @@ void CreateGround(b2World& world, float X, float Y)
 void CreateBox(b2World& world, int MouseX, int MouseY)
 {
 	Entity* e = new Box(world, MouseX, MouseY, entities.size());
-	cout << "Create box at " << e << endl;
+	//cout << "Create box at " << e << endl;
 	entities.push_back(e);
 }
 
