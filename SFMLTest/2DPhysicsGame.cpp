@@ -3,8 +3,33 @@
 #include <SFML\Graphics.hpp>
 #include <Box2D/Box2D.h>
 #include <iostream>
+#include <vector>
+#include <string>
 
 using namespace std;
+
+class Entity {
+public:
+	b2Body* Body;
+	bool contacting;
+	bool toBeDestroyed;
+
+public:
+	virtual void setInactive()
+	{
+		Body->SetActive(false);
+	}
+
+	b2World* getWorld()
+	{
+		return Body->GetWorld();
+	}
+
+	~Entity()
+	{
+		Body->GetWorld()->DestroyBody(Body);
+	}
+};
 
 const float SCALE = 5.f;
 const float DEGTORAD = (b2_pi / 180);
@@ -13,17 +38,91 @@ void CreateGround(b2World& world, float X, float Y);
 void CreateBox(b2World& world, int MouseX, int MouseY);
 void Particles(b2World& world, int MouseX, int MouseY);
 
+class Box : public Entity {
+public:
+	Box(b2World &world, int x, int y, int index)
+	{
+		contacting = false;
+
+		b2BodyDef BodyDef;
+		BodyDef.position = b2Vec2(x / SCALE, y / SCALE); //Spawn Position
+		BodyDef.type = b2_dynamicBody; //Dynamic body
+		Body = world.CreateBody(&BodyDef);
+
+		b2PolygonShape Shape; //shape defintion
+		Shape.SetAsBox(3.f, 3.f);
+		b2FixtureDef FixDef; //fixture definition
+		FixDef.density = 1.f;
+		FixDef.friction = 0.5f;
+		FixDef.shape = &Shape;
+		Body->CreateFixture(&FixDef);
+		Body->SetUserData((void*)index);
+		cout << "CreateBox index: ";
+
+		toBeDestroyed = false;
+	}
+};
+
+class Ground : public Entity {
+public:
+	Ground(b2World& world, float X, float Y, int index)
+	{
+		contacting = false;
+
+		b2BodyDef BodyDef;
+		BodyDef.position = b2Vec2(X / 3.f, Y / 5.f);
+		BodyDef.type = b2_staticBody;
+		b2Body* Body = world.CreateBody(&BodyDef);
+
+		b2PolygonShape Shape;
+		Shape.SetAsBox((700.f / 2) / SCALE, (16.f / 2) / SCALE);
+		b2FixtureDef fixDef;
+		fixDef.density = 0.f;
+		fixDef.shape = &Shape;
+		Body->CreateFixture(&fixDef);
+		Body->SetUserData((void*)index);
+		
+		toBeDestroyed = false;
+	}
+};
+
+std::vector<Entity*> entities;
+
+class MyContactListener : public b2ContactListener {
+	void BeginContact(b2Contact* contact)
+	{	
+		// Get first fixture in contact
+		int index = (int)contact->GetFixtureA()->GetBody()->GetUserData();
+		Entity* e = entities[index];
+		string s = typeid(*e).name();
+		cout << "Entity type: " << s << ", address: " << e << endl;
+		
+		e->toBeDestroyed = true;
+
+		// Get other fixture in contact
+		index = (int)contact->GetFixtureB()->GetBody()->GetUserData();
+		e = entities[index];
+		s = typeid(*e).name();
+		cout << "Entity type: " << s << ", address: " << e << endl;
+		b2World* w = e->getWorld();
+
+		e->toBeDestroyed = true;
+	}
+
+	void EndContact(b2Contact* contact)
+	{
+
+	}
+};
+
+MyContactListener myContactListenerInstance;
+
 int main()
 {
 	//Construct a b2World
 	b2Vec2 gravity(0.0f, 9.8f);
 	b2World world(gravity);
 	CreateGround(world, 400.f, 500.f);
-
-	//Request b2World's body factory to construct a b2Body
-	b2BodyDef groundBodyDef;
-	groundBodyDef.position.Set(0.0f, -10.0f);
-	b2Body* groundBody = world.CreateBody(&groundBodyDef);
 
 	sf::RenderWindow window(sf::VideoMode(1280, 720, 32), "YPWong is a nigger");
 	window.setFramerateLimit(60);
@@ -34,21 +133,30 @@ int main()
 	groundTex.loadFromFile("Assets\\Texture\\groundtexture.bmp");
 	boxTex.loadFromFile("Assets\\Texture\\boxtexture2.bmp");
 
-	//sf::CircleShape shape(100.f);
-	//shape.setFillColor(sf::Color::Green);
-
 	cout << "Press B for Allahuakbar\n";
 
 	window.setKeyRepeatEnabled(false);
 
+	world.SetContactListener(&myContactListenerInstance);
+
+	bool leftKeyPressed = false;
+	
 	while (window.isOpen())
 	{
-		//if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
-		//{
-		//	int MouseX = sf::Mouse::getPosition(window).x;
-		//	int MouseY = sf::Mouse::getPosition(window).y;
-		//	CreateBox(world, MouseX, MouseY);
-		//}
+		if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+		{
+			if (!leftKeyPressed)
+			{
+				int MouseX = sf::Mouse::getPosition(window).x;
+				int MouseY = sf::Mouse::getPosition(window).y;
+				CreateBox(world, MouseX, MouseY);
+				leftKeyPressed = true;
+			}
+		}
+		else
+		{
+			leftKeyPressed = false;
+		}
 
 
 		sf::Event event;
@@ -75,9 +183,19 @@ int main()
 
 		world.Step(1 / 60.f, 8, 10);
 
-		window.clear();
+		for (int i = 0; i < entities.size(); i++)
+		{
+			Entity* e = entities[i];
 
-		//int BodyCount = 0;
+			if (e->toBeDestroyed)
+			{
+				// This shit is causing a crash for some reason
+				//world.DestroyBody(e->Body);
+				e->toBeDestroyed = false;
+			}
+		}
+
+		window.clear();
 
 		for (b2Body* BodyIterator = world.GetBodyList(); BodyIterator != 0; BodyIterator = BodyIterator->GetNext())
 		{
@@ -90,8 +208,6 @@ int main()
 				sprite.setPosition(SCALE * BodyIterator->GetPosition().x, SCALE * BodyIterator->GetPosition().y);
 				sprite.setRotation(BodyIterator->GetAngle() * 180 / b2_pi);
 				window.draw(sprite);
-				//cout << "Sprite Drawn\n";
-				//++BodyCount;
 			}
 			else
 			{
@@ -103,16 +219,7 @@ int main()
 				window.draw(groundSprite);
 			}
 		}
-
-		//sf::Event event;
-		//while (window.pollEvent(event))
-		//{
-		//	if (event.type == sf::Event::Closed)
-		//		window.close();
-		//}
-
-		//window.draw(shape);
-		//window.clear();
+		
 		window.display();
 	}
     return 0;
@@ -120,34 +227,15 @@ int main()
 
 void CreateGround(b2World& world, float X, float Y)
 {
-	b2BodyDef BodyDef;
-	BodyDef.position = b2Vec2(X / 3.f, Y / 5.f);
-	BodyDef.type = b2_staticBody;
-	b2Body* Body = world.CreateBody(&BodyDef);
-
-	b2PolygonShape Shape;
-	Shape.SetAsBox((700.f / 2) / SCALE, (16.f / 2) / SCALE);
-	b2FixtureDef fixDef;
-	fixDef.density = 0.f;
-	fixDef.shape = &Shape;
-	Body->CreateFixture(&fixDef);
+	Entity* e = new Ground(world, X, Y, entities.size());
+	entities.push_back(e);
 }
 
 void CreateBox(b2World& world, int MouseX, int MouseY)
 {
-	b2BodyDef BodyDef;
-	BodyDef.position = b2Vec2(MouseX / SCALE, MouseY / SCALE); //Spawn Position
-	BodyDef.type = b2_dynamicBody; //Dynamic body
-	b2Body* Body = world.CreateBody(&BodyDef);
-
-	b2PolygonShape Shape; //shape defintion
-	Shape.SetAsBox(3.f, 3.f);
-	b2FixtureDef FixDef; //fixture definition
-	FixDef.density = 1.f;
-	FixDef.friction = 0.5f;
-	FixDef.shape = &Shape;
-	Body->CreateFixture(&FixDef);
-	cout << "CreateBox Completed\n";
+	Entity* e = new Box(world, MouseX, MouseY, entities.size());
+	cout << "Create box at " << e << endl;
+	entities.push_back(e);
 }
 
 void Particles(b2World& world, int MouseX, int MouseY)
@@ -185,6 +273,5 @@ void Particles(b2World& world, int MouseX, int MouseY)
 		fixDef.restitution = 0.99f; //Affects the reflection off of surfaces
 		fixDef.filter.groupIndex = 0; //Particle collision Pos values for collision, Neg values for no collision
 		body->CreateFixture(&fixDef);
-		
 	}
 }
