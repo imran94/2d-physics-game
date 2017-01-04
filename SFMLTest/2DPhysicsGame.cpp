@@ -34,9 +34,6 @@ int main()
 	groundTex.loadFromFile("Assets\\Texture\\groundtexture.bmp");
 	boxTex.loadFromFile("Assets\\Texture\\boxtexture2.bmp");
 
-	//sf::CircleShape shape(100.f);
-	//shape.setFillColor(sf::Color::Green);
-
 	cout << "Press B for Allahuakbar\n";
 
 	window.setKeyRepeatEnabled(false);
@@ -49,7 +46,6 @@ int main()
 		//	int MouseY = sf::Mouse::getPosition(window).y;
 		//	CreateBox(world, MouseX, MouseY);
 		//}
-
 
 		sf::Event event;
 		while (window.pollEvent(event))
@@ -77,8 +73,6 @@ int main()
 
 		window.clear();
 
-		//int BodyCount = 0;
-
 		for (b2Body* BodyIterator = world.GetBodyList(); BodyIterator != 0; BodyIterator = BodyIterator->GetNext())
 		{
 			if (BodyIterator->GetType() == b2_dynamicBody)
@@ -89,9 +83,9 @@ int main()
 				sprite.setOrigin(16.f, 16.f);
 				sprite.setPosition(SCALE * BodyIterator->GetPosition().x, SCALE * BodyIterator->GetPosition().y);
 				sprite.setRotation(BodyIterator->GetAngle() * 180 / b2_pi);
+				sprite.setScale(0.5f, 0.5f);
 				window.draw(sprite);
 				//cout << "Sprite Drawn\n";
-				//++BodyCount;
 			}
 			else
 			{
@@ -104,15 +98,6 @@ int main()
 			}
 		}
 
-		//sf::Event event;
-		//while (window.pollEvent(event))
-		//{
-		//	if (event.type == sf::Event::Closed)
-		//		window.close();
-		//}
-
-		//window.draw(shape);
-		//window.clear();
 		window.display();
 	}
     return 0;
