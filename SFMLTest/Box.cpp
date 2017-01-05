@@ -9,7 +9,7 @@ Box::Box(b2World &world, int x, int y)
 	Body = world.CreateBody(&BodyDef);
 
 	b2PolygonShape Shape; //shape defintion
-	Shape.SetAsBox(3.f, 3.f);
+	Shape.SetAsBox(3.f, 6.f);
 	
 	b2FixtureDef FixDef; //fixture definition
 	FixDef.density = 1.f;

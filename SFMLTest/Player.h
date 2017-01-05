@@ -90,7 +90,6 @@ public:
 	{
 		if (remainingJumpSteps > 0)
 		{
-			cout << "remaining steps greater than 0";
 			float force = Body->GetMass() * 10 / (1 / 60.0);
 			force /= 6.0;
 			Body->ApplyForce( b2Vec2(0, force), Body->GetWorldCenter(), false);

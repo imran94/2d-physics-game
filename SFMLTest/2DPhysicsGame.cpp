@@ -40,38 +40,23 @@ class MyContactListener : public b2ContactListener {
 		if (userDataA == BOX_DATA)
 		{
 			entitiesToBeRemoved.push_back(bodyA);
-			cout << "Box Body to remove " << bodyA << endl;
 
-			if (userDataB == GROUND_DATA)
+			if (userDataB == GROUND_DATA || userDataB == PLAYER_DATA)
 			{
 				entitiesToBeRemoved.push_back(bodyB);
-				//cout << "Ground Body to remove " << bodyB << endl;
-			}
-
-			if (userDataB == PLAYER_DATA)
-			{
-
-
 			}
 		}
 
 		if (userDataA == GROUND_DATA && userDataB == BOX_DATA)
 		{
 			entitiesToBeRemoved.push_back(bodyA);
-			//cout << "Ground Body to remove " << bodyA << endl;
-
 			entitiesToBeRemoved.push_back(bodyB);
-			cout << "Box Body to remove " << bodyB << endl;
-
 		}
 
 		if (userDataA == PLAYER_DATA && userDataB == BOX_DATA)
 		{
 			entitiesToBeRemoved.push_back(bodyA);	
-			//cout << "Player Body to remove " << bodyA << endl;
-			
 			entitiesToBeRemoved.push_back(bodyB);
-			cout << "Box Body to remove " << bodyB << endl;
 		}
 	}
 
@@ -103,7 +88,7 @@ int main()
 
 	for (int i = 600 / 4; i < 600; i += 600 / 4)
 	{
-		for (int j = 0; j <= 800; j += 200) 
+		for (int j = 0; j <= 800; j += 50) 
 		{
 			CreateGround(world, j * 1.f, i * 1.f);
 		}
@@ -120,17 +105,13 @@ int main()
 
 	Player* playa = new Player(world, "Assets\\Texture\\Player.png", x, y);
 
-	cout << "Press B for Allahuakbar\n";
-
-	//Disable multiple key presses
-	//window.setKeyRepeatEnabled(false);
-	
 	world.SetContactListener(&myContactListenerInstance);
 
 	bool leftButtonPressed = false;
 
 	while (window.isOpen())
 	{
+		window.clear();
 		if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 		{
 			if (!leftButtonPressed)
@@ -155,14 +136,6 @@ int main()
 				case sf::Event::Closed:
 					if (event.type == sf::Event::Closed)
 						window.close();
-					break;
-				case sf::Event::KeyPressed:
-					if (sf::Keyboard::isKeyPressed(sf::Keyboard::B))
-					{
-						int MouseX = sf::Mouse::getPosition(window).x;
-						int MouseY = sf::Mouse::getPosition(window).y;
-						//Particles(world, MouseX, MouseY);
-					}
 					break;
 			}
 		}
@@ -190,26 +163,15 @@ int main()
 		}
 
 		world.Step(1 / 60.f, 8, 10);
-		window.clear();
-
 		//playa.drawPlayerBox(world, window);
 
 		for (int i = 0; i < entitiesToBeRemoved.size(); i++)
 		{
 			b2Body* b = entitiesToBeRemoved[i];
 			int n = (int)b->GetUserData();
-			if (n == BOX_DATA)
-				cout << "Box body to be destroyed" << b << endl;
-			else if (n == GROUND_DATA)
-				cout << "Ground Body to be destroyed "<< b << endl;
-			else if (n == PLAYER_DATA)
-				cout << "Player to be destroyed " << b << endl;
-
-			//cout << "Body to be destroyed " << b << endl;
-			//b->GetWorld()->DestroyBody(b);
 			b->SetActive(false);
-			//world.DestroyBody(b);
-			//b = NULL;
+			if (n == BOX_DATA)
+				Particles(world, b->GetPosition().x, b->GetPosition().y);
 		}
 		//entitiesToBeRemoved.clear();
 
@@ -220,7 +182,7 @@ int main()
 			if (BodyIterator->GetType() == b2_dynamicBody)
 			{
 				//Render Particles
-				if (BodyIterator->GetUserData() == particleTag && BodyIterator->IsActive())
+				if (n == PARTICLE_DATA && BodyIterator->IsActive())
 				{
 					sf::Sprite parSprite;
 					parSprite.setTexture(boxTex);
@@ -257,7 +219,7 @@ int main()
 					//Set the position of the sprite to that of the dynamicbody
 					parSprite.setPosition(SCALE * BodyIterator->GetPosition().x, SCALE * BodyIterator->GetPosition().y);
 					parSprite.setRotation(BodyIterator->GetAngle() * 180 / b2_pi);
-					parSprite.setScale(0.5f, 0.5f);
+					parSprite.setScale(1.5f, 1.5f);
 					window.draw(parSprite);
 					//cout << "Sprite Drawn\n";
 				}
@@ -267,7 +229,7 @@ int main()
 			{
 				sf::Sprite groundSprite;
 				groundSprite.setTexture(groundTex);
-				groundSprite.setOrigin(/*BodyIterator->GetLocalCenter().x*/0.f, 8.f);
+				groundSprite.setOrigin(0.f, 8.f);
 				groundSprite.setPosition(BodyIterator->GetPosition().x*SCALE, BodyIterator->GetPosition().y*SCALE);
 				groundSprite.setRotation(180 / b2_pi*BodyIterator->GetAngle());
 				window.draw(groundSprite);
@@ -312,7 +274,7 @@ void Particles(b2World& world, int MouseX, int MouseY)
 		bodyDef.position = b2Vec2(MouseX / SCALE, MouseY / SCALE);
 		bodyDef.linearVelocity = blastPower * rayDir;
 		b2Body* body = world.CreateBody(&bodyDef);
-		body->SetUserData(particleTag);
+		body->SetUserData((void*)PARTICLE_DATA);
 		//b2CircleShape circleShape; //shape definition
 		//circleShape.m_radius = 0.05f; //circle radius
 

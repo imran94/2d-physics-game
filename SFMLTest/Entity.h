@@ -6,7 +6,8 @@
 enum Data {
 	GROUND_DATA,
 	BOX_DATA,
-	PLAYER_DATA
+	PLAYER_DATA,
+	PARTICLE_DATA
 };
 
 class Entity {
