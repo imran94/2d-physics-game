@@ -1,6 +1,6 @@
 #include "Ground.h"
 
-Ground::Ground(b2World& world, float X, float Y, int index)
+Ground::Ground(b2World& world, float X, float Y)
 {
 	b2BodyDef BodyDef;
 	BodyDef.position = b2Vec2(X / 3.f, Y / 5.f);
@@ -13,7 +13,7 @@ Ground::Ground(b2World& world, float X, float Y, int index)
 	fixDef.density = 0.f;
 	fixDef.shape = &Shape;
 	Body->CreateFixture(&fixDef);
-	Body->SetUserData((void*)index);
+	Body->SetUserData(groundData);
 
 	toBeDestroyed = false;
 }

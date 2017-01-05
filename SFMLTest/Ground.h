@@ -5,7 +5,7 @@
 
 class Ground : public Entity {
 public:
-	Ground(b2World& world, float X, float Y, int index);
+	Ground(b2World& world, float X, float Y);
 };
 
 #endif // !GROUND_H

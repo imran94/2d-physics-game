@@ -2,9 +2,10 @@
 #include <SFML\Graphics.hpp>
 #include <Box2D\\Box2D.h>
 #include <iostream>
+#include "Entity.h"
 using namespace std;
 
-class Player 
+class Player : public Entity
 {
 private:
 	sf::Texture plTex;
@@ -25,14 +26,13 @@ public:
 		window.draw(plSprite);
 	}
 
-	void* playerData;
 	void drawPlayerBox(b2World& world)
 	{
 		b2BodyDef bodyDef;
 		bodyDef.position = b2Vec2(5, 0);
 		bodyDef.type = b2_dynamicBody;
-		b2Body* body = world.CreateBody(&bodyDef);
-		body->SetUserData(playerData);
+		Body = world.CreateBody(&bodyDef);
+		Body->SetUserData(playerData);
 
 		b2PolygonShape shape;
 		shape.SetAsBox(2, 2);
@@ -41,7 +41,7 @@ public:
 		fixDef.density = 1.f;
 		fixDef.friction = 1.f;
 		fixDef.shape = &shape;
-		body->CreateFixture(&fixDef);
+		Body->CreateFixture(&fixDef);
 	}
 
 	void playerMovement(char direction, float moveSpeed)

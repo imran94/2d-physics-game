@@ -9,6 +9,7 @@
 #include "Ground.h"
 #include "Box.h"
 #include "Player.h"
+#include <typeinfo>
 
 using namespace std;
 
@@ -19,29 +20,51 @@ void CreateGround(b2World& world, float X, float Y);
 void CreateBox(b2World& world, int MouseX, int MouseY);
 void Particles(b2World& world, int MouseX, int MouseY);
 
-std::vector<Entity*> entities;
+std::vector<Entity*> entitiesToBeRemoved;
+void* boxTag;
 
 class MyContactListener : public b2ContactListener {
 	void BeginContact(b2Contact* contact)
 	{	
+		Entity *e = new Entity();
+
 		// Get first fixture in contact
-		int index = (int)contact->GetFixtureA()->GetBody()->GetUserData();
-		Entity* e1 = entities[index];
-		string s = typeid(*e1).name();
-		cout << s <<  " Body address: " << e1->Body << endl;
-		//b2World* w1 = e1->getWorld();
+		void* userDataA = contact->GetFixtureA()->GetBody()->GetUserData();
+		void* userDataB = contact->GetFixtureB()->GetBody()->GetUserData();
 
-		e1->toBeDestroyed = true;
+		if (userDataA == e->boxData)
+		{
+			entitiesToBeRemoved.push_back(static_cast<Box*>(userDataA));
+			
+			if (userDataB == e->groundData)
+			{
+				entitiesToBeRemoved.push_back(static_cast<Ground*>(userDataB));
+			}
+			else if (userDataB == e->playerData)
+			{
+				entitiesToBeRemoved.push_back(static_cast<Player*>(userDataB));
+			}
+		}
 
-		// Get other fixture in contact
-		index = (int)contact->GetFixtureB()->GetBody()->GetUserData();
-		Entity* e2 = entities[index];
-		s = typeid(*e2).name();
-		cout << s << " Body address: " << e2->Body << endl;
-		//b2World* w2 = e2->getWorld();
+		if (userDataA == e->groundData)
+		{
+			entitiesToBeRemoved.push_back(static_cast<Ground*>(userDataA));
 
+			if (userDataB == e->boxData)
+			{
+				entitiesToBeRemoved.push_back(static_cast<Box*>(userDataB));
+			}
+		}
 
-		e2->toBeDestroyed = true;
+		if (userDataA == e->playerData)
+		{
+			entitiesToBeRemoved.push_back(static_cast<Player*>(userDataA));
+			
+			if (userDataB == e->boxData)
+			{
+				entitiesToBeRemoved.push_back(static_cast<Box*>(userDataB));
+			}
+		}
 	}
 
 	void EndContact(b2Contact* contact)
@@ -51,14 +74,15 @@ class MyContactListener : public b2ContactListener {
 };
 
 MyContactListener myContactListenerInstance;
-
 void* particleTag;
 void* groundTag;
 
 int main()
 {
+	Entity* e = new Entity();
+
 	//Construct a b2World
-	b2Vec2 gravity(0.0f, 9.8f);
+	b2Vec2 gravity(0.0f, 30.f);
 	b2World world(gravity);
 	CreateGround(world, 400.f, 500.f);
 
@@ -67,76 +91,90 @@ int main()
 	groundBodyDef.position.Set(0.0f, -10.0f);
 	b2Body* groundBody = world.CreateBody(&groundBodyDef);
 
-	sf::RenderWindow window(sf::VideoMode(1280, 720, 32), "YPWong is a nigger");
+	sf::RenderWindow window(sf::VideoMode(1280, 720, 32), "Bomb Survival");
 	window.setFramerateLimit(60);
-	
+
 	//Load Texture
 	sf::Texture groundTex;
 	sf::Texture boxTex;
 	groundTex.loadFromFile("Assets\\Texture\\groundtexture.bmp");
 	boxTex.loadFromFile("Assets\\Texture\\boxtexture2.bmp");
-	Player playa("Assets\\Texture\\Player.png");
+	Player* playa = new Player("Assets\\Texture\\Player.png");
 
 	cout << "Press B for Allahuakbar\n";
 
 	//Disable multiple key presses
 	window.setKeyRepeatEnabled(false);
+	
+	world.SetContactListener(&myContactListenerInstance);
+
+	bool leftButtonPressed = false;
 
 	while (window.isOpen())
 	{
-		//if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
-		//{
-		//	int MouseX = sf::Mouse::getPosition(window).x;
-		//	int MouseY = sf::Mouse::getPosition(window).y;
-		//	CreateBox(world, MouseX, MouseY);
-		//}
+		if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+		{
+			cout << "Left button pressed\n";
+			int MouseX = sf::Mouse::getPosition(window).x;
+			int MouseY = sf::Mouse::getPosition(window).y;
+			CreateBox(world, MouseX, MouseY);
+			leftButtonPressed = true;
+		}
+		else
+		{
+			leftButtonPressed = false;
+		}
 
 		sf::Event event;
 		while (window.pollEvent(event))
 		{
 			switch (event.type)
 			{
-			case sf::Event::Closed:
-			{
-				if (event.type == sf::Event::Closed)
-					window.close();
-				break;
-			}
-			case sf::Event::KeyPressed:
-
-				if (sf::Keyboard::isKeyPressed(sf::Keyboard::B))
-				{
-					int MouseX = sf::Mouse::getPosition(window).x;
-					int MouseY = sf::Mouse::getPosition(window).y;
-					Particles(world, MouseX, MouseY);
-				}
+				case sf::Event::Closed:
+					if (event.type == sf::Event::Closed)
+						window.close();
+					break;
+				case sf::Event::KeyPressed:
+					if (sf::Keyboard::isKeyPressed(sf::Keyboard::B))
+					{
+						int MouseX = sf::Mouse::getPosition(window).x;
+						int MouseY = sf::Mouse::getPosition(window).y;
+						//Particles(world, MouseX, MouseY);
+					}
+					break;
 			}
 		}
 
-		playa.drawPlayerBox(world);
+		//playa->drawPlayerBox(world);
 
 		//Player Movement
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
 		{
-			playa.playerMovement('u', 6.0);
+			playa->playerMovement('u', 6.0);
 		}
 		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
 		{
-			playa.playerMovement('d', 6.0);
+			playa->playerMovement('d', 6.0);
 		}
 		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
 		{
-			playa.playerMovement('l', 6.0);
+			playa->playerMovement('l', 6.0);
 		}
 		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
 		{
-			playa.playerMovement('r', 6.0);
+			playa->playerMovement('r', 6.0);
 		}
 
 		world.Step(1 / 60.f, 8, 10);
 		window.clear();
 
 		//playa.drawPlayerBox(world, window);
+
+		for (int i = 0; i < entitiesToBeRemoved.size(); i++)
+		{
+			delete entitiesToBeRemoved[i];
+		}
+		entitiesToBeRemoved.clear();
 
 		//Drawing sprites
 		for (b2Body* BodyIterator = world.GetBodyList(); BodyIterator; BodyIterator = BodyIterator->GetNext())
@@ -172,6 +210,7 @@ int main()
 
 			if (BodyIterator->GetType() == b2_dynamicBody)
 			{
+				//Render Particles
 				if (BodyIterator->GetUserData() == particleTag)
 				{
 					sf::Sprite parSprite;
@@ -184,11 +223,29 @@ int main()
 					parSprite.setScale(0.5f, 0.5f);
 					window.draw(parSprite);
 				}
-				if (BodyIterator->GetUserData() == playa.playerData)
+
+				//Render player
+				if (BodyIterator->GetUserData() == playa->playerData)
 				{
 					cout << "Player drawn\n";
-					playa.drawPlayer(window);
+					playa->drawPlayer(window);
 				}
+
+				//Render boxes
+				if (BodyIterator->GetUserData() == e->boxData)
+				{
+					sf::Sprite parSprite;
+					parSprite.setTexture(boxTex);
+					parSprite.setColor(sf::Color::Red);
+					parSprite.setOrigin(14.5f, 14.5f);
+					//Set the position of the sprite to that of the dynamicbody
+					parSprite.setPosition(SCALE * BodyIterator->GetPosition().x, SCALE * BodyIterator->GetPosition().y);
+					parSprite.setRotation(BodyIterator->GetAngle() * 180 / b2_pi);
+					parSprite.setScale(0.5f, 0.5f);
+					window.draw(parSprite);
+					//cout << "Sprite Drawn\n";
+				}
+
 			}
 			else if (BodyIterator->GetType() == b2_staticBody && BodyIterator->GetUserData() == groundTag)
 			{
@@ -209,35 +266,12 @@ int main()
 
 void CreateGround(b2World& world, float X, float Y)
 {
-	b2BodyDef bodyDef;
-	bodyDef.position = b2Vec2(X / 3.f, Y / 5.f);
-	bodyDef.type = b2_staticBody;
-	b2Body* body = world.CreateBody(&bodyDef);
-	body->SetUserData(groundTag);
-
-	b2PolygonShape shape;
-	shape.SetAsBox((700.f / 2) / SCALE, (16.f / 2) / SCALE);
-	b2FixtureDef fixDef;
-	fixDef.density = 0.f;
-	fixDef.shape = &shape;
-	body->CreateFixture(&fixDef);
+	Ground* g = new Ground(world, X, Y);
 }
 
 void CreateBox(b2World& world, int MouseX, int MouseY)
 {
-	b2BodyDef BodyDef;
-	BodyDef.position = b2Vec2(MouseX / SCALE, MouseY / SCALE); //Spawn Position
-	BodyDef.type = b2_dynamicBody; //Dynamic body
-	b2Body* Body = world.CreateBody(&BodyDef);
-
-	b2PolygonShape shape; //shape defintion
-	shape.SetAsBox(3.f, 3.f);
-	b2FixtureDef FixDef; //fixture definition
-	FixDef.density = 1.f;
-	FixDef.friction = 0.5f;
-	FixDef.shape = &shape;
-	Body->CreateFixture(&FixDef);
-	cout << "CreateBox Completed\n";
+	new Box(world, MouseX, MouseY);
 }
 
 void Particles(b2World& world, int MouseX, int MouseY)
@@ -276,5 +310,5 @@ void Particles(b2World& world, int MouseX, int MouseY)
 		fixDef.restitution = 0.99f; //Affects the reflection off of surfaces
 		fixDef.filter.groupIndex = 0; //Particle collision Pos values for collision, Neg values for no collision
 		body->CreateFixture(&fixDef);
-		}
+	}
 }
