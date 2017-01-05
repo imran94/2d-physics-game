@@ -103,7 +103,7 @@ int main()
 
 	for (int i = 600 / 4; i < 600; i += 600 / 4)
 	{
-		for (int j = 0; j <= 800; j += 200) 
+		for (int j = 0; j <= 800; j += 9) 
 		{
 			CreateGround(world, j * 1.f, i * 1.f);
 		}
@@ -112,7 +112,7 @@ int main()
 	//Load Texture
 	sf::Texture groundTex;
 	sf::Texture boxTex;
-	groundTex.loadFromFile("Assets\\Texture\\groundtexture.bmp");
+	groundTex.loadFromFile("Assets\\Texture\\groundtexture2.bmp");
 	boxTex.loadFromFile("Assets\\Texture\\boxtexture2.bmp");
 
 	int x = window.getSize().x / 2;
