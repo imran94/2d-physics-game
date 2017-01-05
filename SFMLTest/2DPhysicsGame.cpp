@@ -109,9 +109,15 @@ int main()
 
 	bool leftButtonPressed = false;
 
+	sf::Clock clock;
 	while (window.isOpen())
 	{
 		window.clear();
+		if (clock.getElapsedTime().asSeconds() > 1.5F);
+		{
+			//CreateBox(world, SCALE * playa->Body->GetPosition().x, 0.f);
+			clock.restart();
+		}
 		if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 		{
 			if (!leftButtonPressed)
@@ -254,15 +260,13 @@ void CreateBox(b2World& world, int MouseX, int MouseY)
 
 void Particles(b2World& world, int MouseX, int MouseY)
 {
-	int numRays = 18;
-	float blastPower = 200.f;
+	int numRays = 1;
+	float blastPower = 10.f;
 	for (int i = 0; i < numRays; i++)
 	{
 		float ii = i; //somehow the formula only works like this
 		float angle = (ii / numRays) * 360; //getting the angle for each particle
 		b2Vec2 rayDir(sinf(angle), cosf(angle)); //getting the X and Y coordinates
-
-		cout << i << " " << ii << " "<< angle << endl;
 
 		b2BodyDef bodyDef;
 		bodyDef.type = b2_dynamicBody;

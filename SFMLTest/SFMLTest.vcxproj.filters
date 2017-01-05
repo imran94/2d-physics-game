@@ -66,5 +66,8 @@
     <Image Include="Assets\Texture\Player.png">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="Assets\Texture\groundtexture2.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>
