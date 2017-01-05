@@ -9,11 +9,13 @@ Box::Box(b2World &world, int x, int y)
 
 	b2PolygonShape Shape; //shape defintion
 	Shape.SetAsBox(3.f, 3.f);
+	
 	b2FixtureDef FixDef; //fixture definition
 	FixDef.density = 1.f;
 	FixDef.friction = 0.5f;
 	FixDef.shape = &Shape;
 	Body->CreateFixture(&FixDef);
+	
 	Body->SetUserData(boxData);
 
 	toBeDestroyed = false;

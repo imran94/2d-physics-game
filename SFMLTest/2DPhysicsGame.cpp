@@ -84,27 +84,38 @@ int main()
 	//Construct a b2World
 	b2Vec2 gravity(0.0f, 30.f);
 	b2World world(gravity);
-	CreateGround(world, 400.f, 500.f);
 
 	//Request b2World's body factory to construct a b2Body
 	b2BodyDef groundBodyDef;
 	groundBodyDef.position.Set(0.0f, -10.0f);
 	b2Body* groundBody = world.CreateBody(&groundBodyDef);
 
-	sf::RenderWindow window(sf::VideoMode(1280, 720, 32), "Bomb Survival");
+	sf::RenderWindow window(sf::VideoMode(800, 600, 32), "Bomb Survival");
 	window.setFramerateLimit(60);
+
+	for (int i = 600 / 6; i < 600; i += 600 / 6)
+	{
+		for (int j = 0; j <= 800; j += 100) 
+		{
+			CreateGround(world, j * 1.f, i * 1.f);
+		}
+	}
 
 	//Load Texture
 	sf::Texture groundTex;
 	sf::Texture boxTex;
 	groundTex.loadFromFile("Assets\\Texture\\groundtexture.bmp");
 	boxTex.loadFromFile("Assets\\Texture\\boxtexture2.bmp");
-	Player* playa = new Player("Assets\\Texture\\Player.png");
+
+	int x = window.getSize().x / 2;
+	int y = 15;
+
+	Player* playa = new Player(world, "Assets\\Texture\\Player.png", x, y);
 
 	cout << "Press B for Allahuakbar\n";
 
 	//Disable multiple key presses
-	window.setKeyRepeatEnabled(false);
+	//window.setKeyRepeatEnabled(false);
 	
 	world.SetContactListener(&myContactListenerInstance);
 
@@ -150,19 +161,26 @@ int main()
 		//Player Movement
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
 		{
-			playa->playerMovement('u', 6.0);
+			//playa->playerMovement('u', 6.0);
+			
 		}
 		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
 		{
-			playa->playerMovement('d', 6.0);
+			//playa->playerMovement('d', 6.0);
 		}
 		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
 		{
-			playa->playerMovement('l', 6.0);
+			playa->update(MS_LEFT);
+			//playa->playerMovement('l', 6.0);
 		}
 		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
 		{
-			playa->playerMovement('r', 6.0);
+			playa->update(MS_RIGHT);
+			//playa->playerMovement('r', 6.0);
+		}
+		else 
+		{
+			playa->update(MS_STOP);
 		}
 
 		world.Step(1 / 60.f, 8, 10);
@@ -179,35 +197,6 @@ int main()
 		//Drawing sprites
 		for (b2Body* BodyIterator = world.GetBodyList(); BodyIterator; BodyIterator = BodyIterator->GetNext())
 		{
-			//if (BodyIterator->GetType() == b2_dynamicBody && BodyIterator->GetUserData() == particleTag)
-			//{
-			//	sf::Sprite parSprite;
-			//	parSprite.setTexture(boxTex);
-			//	parSprite.setColor(sf::Color::Red);
-			//	parSprite.setOrigin(14.5f, 14.5f);
-			//	//Set the position of the sprite to that of the dynamicbody
-			//	parSprite.setPosition(SCALE * BodyIterator->GetPosition().x, SCALE * BodyIterator->GetPosition().y);
-			//	parSprite.setRotation(BodyIterator->GetAngle() * 180 / b2_pi);
-			//	parSprite.setScale(0.5f, 0.5f);
-			//	window.draw(parSprite);
-			//	//cout << "Sprite Drawn\n";
-			//}
-			//else if (BodyIterator->GetType() == b2_staticBody && BodyIterator->GetUserData() == groundTag)
-			//{
-			//	sf::Sprite groundSprite;
-			//	groundSprite.setTexture(groundTex);
-			//	groundSprite.setOrigin(350.f, 8.f);
-			//	groundSprite.setPosition(BodyIterator->GetPosition().x*SCALE, BodyIterator->GetPosition().y*SCALE);
-			//	groundSprite.setRotation(180 / b2_pi*BodyIterator->GetAngle());
-			//	window.draw(groundSprite);
-			//}
-			//else if (BodyIterator->GetUserData() == playa.playerData &&BodyIterator->GetType() == b2_dynamicBody )
-			//{
-			//	cout << "Player drawn\n";
-			//	playa.drawPlayer(window);
-			//}
-
-
 			if (BodyIterator->GetType() == b2_dynamicBody)
 			{
 				//Render Particles
@@ -227,8 +216,15 @@ int main()
 				//Render player
 				if (BodyIterator->GetUserData() == playa->playerData)
 				{
-					cout << "Player drawn\n";
-					playa->drawPlayer(window);
+					sf::Sprite parSprite;
+					parSprite.setTexture(boxTex);
+					parSprite.setColor(sf::Color::White);
+					parSprite.setOrigin(14.5f, 14.5f);
+					//Set the position of the sprite to that of the dynamicbody
+					parSprite.setPosition(SCALE * BodyIterator->GetPosition().x, SCALE * BodyIterator->GetPosition().y);
+					parSprite.setRotation(BodyIterator->GetAngle() * 180 / b2_pi);
+					parSprite.setScale(1.f, 1.f);
+					window.draw(parSprite);
 				}
 
 				//Render boxes

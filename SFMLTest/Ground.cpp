@@ -8,7 +8,7 @@ Ground::Ground(b2World& world, float X, float Y)
 	Body = world.CreateBody(&BodyDef);
 
 	b2PolygonShape Shape;
-	Shape.SetAsBox((700.f / 2) / SCALE, (16.f / 2) / SCALE);
+	Shape.SetAsBox((100.f / 2) / SCALE, (16.f / 2) / SCALE);
 	b2FixtureDef fixDef;
 	fixDef.density = 0.f;
 	fixDef.shape = &Shape;
