@@ -30,6 +30,9 @@ class MyContactListener : public b2ContactListener {
 		cout << "boxData: " << BOX_DATA << endl;
 		cout << "playerData: " << PLAYER_DATA << endl;
 
+		b2WorldManifold worldMani;
+		contact->GetWorldManifold(&worldMani);
+
 		// Get first fixture in contact
 		b2Body* bodyA = contact->GetFixtureA()->GetBody();
 		int userDataA = (int)bodyA->GetUserData();
@@ -126,7 +129,7 @@ int main()
 	//window.setKeyRepeatEnabled(false);
 	
 	world.SetContactListener(&myContactListenerInstance);
-
+	
 	bool leftButtonPressed = false;
 
 	while (window.isOpen())
@@ -199,7 +202,12 @@ int main()
 			b2Body* b = entitiesToBeRemoved[i];
 			int n = (int)b->GetUserData();
 			if (n == BOX_DATA)
+			{
 				cout << "Box body to be destroyed" << b << endl;
+					//int MouseX = sf::Mouse::getPosition(window).x;
+					//int MouseY = sf::Mouse::getPosition(window).y;
+					//Particles(world, MouseX, MouseY);
+			}
 			else if (n == GROUND_DATA)
 				cout << "Ground Body to be destroyed "<< b << endl;
 			else if (n == PLAYER_DATA)
@@ -224,7 +232,7 @@ int main()
 				{
 					sf::Sprite parSprite;
 					parSprite.setTexture(boxTex);
-					parSprite.setColor(sf::Color::Red);
+					parSprite.setColor(sf::Color::Yellow);
 					parSprite.setOrigin(14.5f, 14.5f);
 					//Set the position of the sprite to that of the dynamicbody
 					parSprite.setPosition(SCALE * BodyIterator->GetPosition().x, SCALE * BodyIterator->GetPosition().y);
@@ -290,9 +298,9 @@ void CreateBox(b2World& world, int MouseX, int MouseY)
 	new Box(world, MouseX, MouseY);
 }
 
-void Particles(b2World& world, int MouseX, int MouseY)
+void Particles(b2World& world, int X, int Y)
 {
-	int numRays = 18;
+	int numRays = 3;
 	float blastPower = 200.f;
 	for (int i = 0; i < numRays; i++)
 	{
@@ -309,7 +317,7 @@ void Particles(b2World& world, int MouseX, int MouseY)
 		bodyDef.linearDamping = 0.8f;
 		bodyDef.angularDamping = 0.8f;
 		bodyDef.gravityScale = 0;
-		bodyDef.position = b2Vec2(MouseX / SCALE, MouseY / SCALE);
+		bodyDef.position = b2Vec2(X / SCALE, Y / SCALE);
 		bodyDef.linearVelocity = blastPower * rayDir;
 		b2Body* body = world.CreateBody(&bodyDef);
 		body->SetUserData(particleTag);
