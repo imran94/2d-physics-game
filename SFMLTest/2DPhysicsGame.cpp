@@ -88,7 +88,7 @@ int main()
 
 	for (int i = 600 / 4; i < 600; i += 600 / 4)
 	{
-		for (int j = 0; j <= 800; j += 50) 
+		for (int j = 0; j <= 800; j += 9) 
 		{
 			CreateGround(world, j * 1.f, i * 1.f);
 		}
@@ -97,7 +97,7 @@ int main()
 	//Load Texture
 	sf::Texture groundTex;
 	sf::Texture boxTex;
-	groundTex.loadFromFile("Assets\\Texture\\groundtexture.bmp");
+	groundTex.loadFromFile("Assets\\Texture\\groundtexture2.bmp");
 	boxTex.loadFromFile("Assets\\Texture\\boxtexture2.bmp");
 
 	int x = window.getSize().x / 2;
@@ -109,8 +109,14 @@ int main()
 
 	bool leftButtonPressed = false;
 
+	sf::Clock clock;
 	while (window.isOpen())
 	{
+		if (clock.getElapsedTime().asSeconds() > 1.5f)
+		{
+			clock.restart();
+			CreateBox(world, SCALE * playa->Body->GetPosition().x, 0.f);
+		}
 		window.clear();
 		if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 		{
@@ -170,8 +176,8 @@ int main()
 			b2Body* b = entitiesToBeRemoved[i];
 			int n = (int)b->GetUserData();
 			b->SetActive(false);
-			if (n == BOX_DATA)
-				Particles(world, b->GetPosition().x, b->GetPosition().y);
+			//if (n == BOX_DATA)
+				//Particles(world, b->GetPosition().x, b->GetPosition().y);
 		}
 		//entitiesToBeRemoved.clear();
 
@@ -256,13 +262,14 @@ void Particles(b2World& world, int MouseX, int MouseY)
 {
 	int numRays = 18;
 	float blastPower = 200.f;
+	std::vector<b2Body*> bodies;
 	for (int i = 0; i < numRays; i++)
 	{
 		float ii = i; //somehow the formula only works like this
 		float angle = (ii / numRays) * 360; //getting the angle for each particle
 		b2Vec2 rayDir(sinf(angle), cosf(angle)); //getting the X and Y coordinates
 
-		cout << i << " " << ii << " "<< angle << endl;
+		//cout << i << " " << ii << " "<< angle << endl;
 
 		b2BodyDef bodyDef;
 		bodyDef.type = b2_dynamicBody;
@@ -288,5 +295,13 @@ void Particles(b2World& world, int MouseX, int MouseY)
 		fixDef.restitution = 0.99f; //Affects the reflection off of surfaces
 		fixDef.filter.groupIndex = 0; //Particle collision Pos values for collision, Neg values for no collision
 		body->CreateFixture(&fixDef);
+		bodies.push_back(body);
+	}
+	sf::Clock clock;
+
+	while (clock.getElapsedTime().asSeconds() < 1.5f) {}
+	for (int i = 0; i < bodies.size(); i++)
+	{
+		bodies[i]->GetWorld()->DestroyBody(bodies[i]);
 	}
 }
