@@ -1,4 +1,5 @@
 #include "Ground.h"
+#include <iostream>
 
 Ground::Ground(b2World& world, float X, float Y)
 {
@@ -8,12 +9,14 @@ Ground::Ground(b2World& world, float X, float Y)
 	Body = world.CreateBody(&BodyDef);
 
 	b2PolygonShape Shape;
-	Shape.SetAsBox((100.f / 2) / SCALE, (16.f / 2) / SCALE);
+	Shape.SetAsBox((400.f / 2) / SCALE, (16.f / 2) / SCALE);
+	
 	b2FixtureDef fixDef;
-	fixDef.density = 0.f;
+	fixDef.density = 1.f;
+	fixDef.friction = 1.5f;
 	fixDef.shape = &Shape;
 	Body->CreateFixture(&fixDef);
-	Body->SetUserData(groundData);
+	Body->SetUserData((void*)GROUND_DATA);
 
-	toBeDestroyed = false;
+	std::cout << "Created ground at " << Body << std::endl;
 }

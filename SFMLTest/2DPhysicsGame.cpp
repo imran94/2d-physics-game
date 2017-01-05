@@ -20,50 +20,58 @@ void CreateGround(b2World& world, float X, float Y);
 void CreateBox(b2World& world, int MouseX, int MouseY);
 void Particles(b2World& world, int MouseX, int MouseY);
 
-std::vector<Entity*> entitiesToBeRemoved;
+std::vector<b2Body*> entitiesToBeRemoved;
 void* boxTag;
 
 class MyContactListener : public b2ContactListener {
 	void BeginContact(b2Contact* contact)
 	{	
-		Entity *e = new Entity();
+		cout << "GroundData: " << GROUND_DATA << endl;
+		cout << "boxData: " << BOX_DATA << endl;
+		cout << "playerData: " << PLAYER_DATA << endl;
 
 		// Get first fixture in contact
-		void* userDataA = contact->GetFixtureA()->GetBody()->GetUserData();
-		void* userDataB = contact->GetFixtureB()->GetBody()->GetUserData();
+		b2Body* bodyA = contact->GetFixtureA()->GetBody();
+		int userDataA = (int)bodyA->GetUserData();
 
-		if (userDataA == e->boxData)
+		b2Body* bodyB = contact->GetFixtureB()->GetBody();
+		int userDataB = (int)bodyB->GetUserData();
+
+		if (userDataA == BOX_DATA)
 		{
-			entitiesToBeRemoved.push_back(static_cast<Box*>(userDataA));
-			
-			if (userDataB == e->groundData)
+			entitiesToBeRemoved.push_back(bodyA);
+			cout << "Box Body to remove " << bodyA << endl;
+
+			if (userDataB == GROUND_DATA)
 			{
-				entitiesToBeRemoved.push_back(static_cast<Ground*>(userDataB));
+				entitiesToBeRemoved.push_back(bodyB);
+				//cout << "Ground Body to remove " << bodyB << endl;
 			}
-			else if (userDataB == e->playerData)
+
+			if (userDataB == PLAYER_DATA)
 			{
-				entitiesToBeRemoved.push_back(static_cast<Player*>(userDataB));
+
+
 			}
 		}
 
-		if (userDataA == e->groundData)
+		if (userDataA == GROUND_DATA && userDataB == BOX_DATA)
 		{
-			entitiesToBeRemoved.push_back(static_cast<Ground*>(userDataA));
+			entitiesToBeRemoved.push_back(bodyA);
+			//cout << "Ground Body to remove " << bodyA << endl;
 
-			if (userDataB == e->boxData)
-			{
-				entitiesToBeRemoved.push_back(static_cast<Box*>(userDataB));
-			}
+			entitiesToBeRemoved.push_back(bodyB);
+			cout << "Box Body to remove " << bodyB << endl;
+
 		}
 
-		if (userDataA == e->playerData)
+		if (userDataA == PLAYER_DATA && userDataB == BOX_DATA)
 		{
-			entitiesToBeRemoved.push_back(static_cast<Player*>(userDataA));
+			entitiesToBeRemoved.push_back(bodyA);	
+			//cout << "Player Body to remove " << bodyA << endl;
 			
-			if (userDataB == e->boxData)
-			{
-				entitiesToBeRemoved.push_back(static_cast<Box*>(userDataB));
-			}
+			entitiesToBeRemoved.push_back(bodyB);
+			cout << "Box Body to remove " << bodyB << endl;
 		}
 	}
 
@@ -93,9 +101,9 @@ int main()
 	sf::RenderWindow window(sf::VideoMode(800, 600, 32), "Bomb Survival");
 	window.setFramerateLimit(60);
 
-	for (int i = 600 / 6; i < 600; i += 600 / 6)
+	for (int i = 600 / 4; i < 600; i += 600 / 4)
 	{
-		for (int j = 0; j <= 800; j += 100) 
+		for (int j = 0; j <= 800; j += 200) 
 		{
 			CreateGround(world, j * 1.f, i * 1.f);
 		}
@@ -125,11 +133,14 @@ int main()
 	{
 		if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 		{
-			cout << "Left button pressed\n";
-			int MouseX = sf::Mouse::getPosition(window).x;
-			int MouseY = sf::Mouse::getPosition(window).y;
-			CreateBox(world, MouseX, MouseY);
-			leftButtonPressed = true;
+			if (!leftButtonPressed)
+			{
+				cout << "Left button pressed\n";
+				int MouseX = sf::Mouse::getPosition(window).x;
+				int MouseY = sf::Mouse::getPosition(window).y;
+				CreateBox(world, MouseX, MouseY);
+				leftButtonPressed = true;
+			}
 		}
 		else
 		{
@@ -156,31 +167,26 @@ int main()
 			}
 		}
 
-		//playa->drawPlayerBox(world);
 
 		//Player Movement
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
-		{
-			//playa->playerMovement('u', 6.0);
-			
-		}
-		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
-		{
-			//playa->playerMovement('d', 6.0);
-		}
-		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)
+			|| sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
 		{
 			playa->update(MS_LEFT);
-			//playa->playerMovement('l', 6.0);
 		}
-		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)
+			|| sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
 		{
 			playa->update(MS_RIGHT);
-			//playa->playerMovement('r', 6.0);
 		}
 		else 
 		{
 			playa->update(MS_STOP);
+		}
+
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
+		{
+			playa->jump();
 		}
 
 		world.Step(1 / 60.f, 8, 10);
@@ -190,17 +196,31 @@ int main()
 
 		for (int i = 0; i < entitiesToBeRemoved.size(); i++)
 		{
-			delete entitiesToBeRemoved[i];
+			b2Body* b = entitiesToBeRemoved[i];
+			int n = (int)b->GetUserData();
+			if (n == BOX_DATA)
+				cout << "Box body to be destroyed" << b << endl;
+			else if (n == GROUND_DATA)
+				cout << "Ground Body to be destroyed "<< b << endl;
+			else if (n == PLAYER_DATA)
+				cout << "Player to be destroyed " << b << endl;
+
+			//cout << "Body to be destroyed " << b << endl;
+			//b->GetWorld()->DestroyBody(b);
+			b->SetActive(false);
+			//world.DestroyBody(b);
+			//b = NULL;
 		}
-		entitiesToBeRemoved.clear();
+		//entitiesToBeRemoved.clear();
 
 		//Drawing sprites
 		for (b2Body* BodyIterator = world.GetBodyList(); BodyIterator; BodyIterator = BodyIterator->GetNext())
 		{
+			int n = (int) BodyIterator->GetUserData();
 			if (BodyIterator->GetType() == b2_dynamicBody)
 			{
 				//Render Particles
-				if (BodyIterator->GetUserData() == particleTag)
+				if (BodyIterator->GetUserData() == particleTag && BodyIterator->IsActive())
 				{
 					sf::Sprite parSprite;
 					parSprite.setTexture(boxTex);
@@ -214,7 +234,7 @@ int main()
 				}
 
 				//Render player
-				if (BodyIterator->GetUserData() == playa->playerData)
+				if (n == PLAYER_DATA && BodyIterator->IsActive())
 				{
 					sf::Sprite parSprite;
 					parSprite.setTexture(boxTex);
@@ -228,7 +248,7 @@ int main()
 				}
 
 				//Render boxes
-				if (BodyIterator->GetUserData() == e->boxData)
+				if (n == BOX_DATA && BodyIterator->IsActive())
 				{
 					sf::Sprite parSprite;
 					parSprite.setTexture(boxTex);
@@ -243,11 +263,11 @@ int main()
 				}
 
 			}
-			else if (BodyIterator->GetType() == b2_staticBody && BodyIterator->GetUserData() == groundTag)
+			else if (BodyIterator->GetType() == b2_staticBody && n == GROUND_DATA && BodyIterator->IsActive())
 			{
 				sf::Sprite groundSprite;
 				groundSprite.setTexture(groundTex);
-				groundSprite.setOrigin(350.f, 8.f);
+				groundSprite.setOrigin(/*BodyIterator->GetLocalCenter().x*/0.f, 8.f);
 				groundSprite.setPosition(BodyIterator->GetPosition().x*SCALE, BodyIterator->GetPosition().y*SCALE);
 				groundSprite.setRotation(180 / b2_pi*BodyIterator->GetAngle());
 				window.draw(groundSprite);

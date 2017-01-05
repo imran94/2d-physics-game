@@ -1,4 +1,5 @@
 #include "Box.h"
+#include <iostream>
 
 Box::Box(b2World &world, int x, int y)
 {
@@ -16,7 +17,7 @@ Box::Box(b2World &world, int x, int y)
 	FixDef.shape = &Shape;
 	Body->CreateFixture(&FixDef);
 	
-	Body->SetUserData(boxData);
+	Body->SetUserData((void*)BOX_DATA);
 
-	toBeDestroyed = false;
+	std::cout << "Created box at " << Body << std::endl;
 }

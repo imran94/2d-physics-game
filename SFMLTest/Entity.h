@@ -3,19 +3,18 @@
 
 #include <Box2D/Box2D.h>
 
-struct Data {
-	int x;
+enum Data {
+	GROUND_DATA,
+	BOX_DATA,
+	PLAYER_DATA
 };
 
 class Entity {
 public:
 	const float SCALE = 5.f;
 	b2Body* Body;
-	bool toBeDestroyed;
-
-	void* groundData;
-	void* boxData;
-	void* playerData;
+	bool toBeDestroyed;	
+	Data data;
 
 public:
 	~Entity();
