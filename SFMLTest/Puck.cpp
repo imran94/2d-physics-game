@@ -90,7 +90,7 @@ bool Puck::checkTopGoal()
 
 bool Puck::checkBottomGoal()
 {
-	return y >= window->getSize().y && x >= leftBound && x <= rightBound;
+	return y >= window->getSize().y - radius && x >= leftBound && x <= rightBound;
 	sound.PlayGoalSound();
 }
 
