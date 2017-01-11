@@ -16,7 +16,7 @@ enum MoveState {
 class Player 
 {
 public:
-	const int radius = 35.f;
+	const int radius = 35;
 
 	int score;
 	Vector2d velocity;

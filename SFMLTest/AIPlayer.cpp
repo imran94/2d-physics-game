@@ -14,8 +14,6 @@ void AIPlayer::move(Puck puck)
 
 	if (puck.y < window->getSize().y / 2)
 	{
-		std::cout << "Puck in range\n";
-
 		velocity.i = puck.x;
 		velocity.j = puck.y;
 		velocity = velocity.getUnitVector().times(15);
@@ -29,23 +27,18 @@ void AIPlayer::move(Puck puck)
 	}
 	else
 	{
-		std::cout << "Puck out of range\n";
-
 		double destX = window->getSize().x / 2;
 		double destY = offset;
 
 		velocity.i = destX;
 		velocity.j = destY;
-		velocity = velocity.getUnitVector();
+		velocity = velocity.getUnitVector().times(10);
 
-		x += velocity.i;
-		y += velocity.j;
+		if (puck.leftBound > x) { x += velocity.i; }
+		else if (puck.rightBound < x){ x -= velocity.i; }
 
-		if (destX > x) { x += velocity.i; }
-		else { x -= velocity.i; }
-
-		if (destY > y) { y += velocity.j; }
-		else { y -= velocity.j; }
+		if (destY - radius > y) { y += velocity.j; }
+		else if (destY + radius < y) { y -= velocity.j; }
 	}
 
 	// Collide with left wall
