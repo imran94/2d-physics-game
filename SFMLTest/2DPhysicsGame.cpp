@@ -2,6 +2,7 @@
 //
 #include <SFML\Graphics.hpp>
 #include "Player.h"
+#include "AIPlayer.h"
 #include "Puck.h"
 
 void checkCollision(Player &player, Puck &puck)
@@ -16,13 +17,13 @@ void checkCollision(Player &player, Puck &puck)
 	}
 }
 
-void update(sf::RenderWindow &window, Player &player1, Puck &puck)
+void update(sf::RenderWindow &window, Player &player1, AIPlayer &player2, Puck &puck)
 {
 		
 	if (puck.checkBottomGoal())
 	{
 		puck.reset();
-
+		player2.score++;
 	}
 	else if (puck.checkTopGoal())
 	{
@@ -31,23 +32,30 @@ void update(sf::RenderWindow &window, Player &player1, Puck &puck)
 	}
 
 	puck.update();
+	player2.move(puck);
 
 	if (window.hasFocus())
 	{
 		int x = sf::Mouse::getPosition(window).x;
 		int y = sf::Mouse::getPosition(window).y;
 
-		player1.update(x, y);
+		if (y >= window.getSize().y / 2)
+		{
+			player1.update(x, y);
+		}
 	}
 	checkCollision(player1, puck);
+	checkCollision(player2, puck);
 }
 
 int main()
 {
 	sf::RenderWindow window(sf::VideoMode(320, 480, 32), "Bomb Survival");
+
 	window.setFramerateLimit(60);
 
 	Player player1(window);
+	AIPlayer player2(window);
 	Puck puck(window);
 
 	sf::Texture texture;
@@ -71,12 +79,13 @@ int main()
 			}
 		}
 
-		update(window, player1, puck);
+		update(window, player1, player2, puck);
 
 		window.clear();
 
 		window.draw(background);
 		player1.draw();
+		player2.draw();
 		puck.draw();
 		window.display();
 	}
