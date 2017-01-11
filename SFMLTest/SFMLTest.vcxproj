@@ -163,15 +163,21 @@
     <ClInclude Include="Box.h" />
     <ClInclude Include="Entity.h" />
     <ClInclude Include="Ground.h" />
+    <ClInclude Include="Constants.h" />
     <ClInclude Include="Player.h" />
+    <ClInclude Include="Puck.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="resource1.h" />
+    <ClInclude Include="Vector2d.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="2DPhysicsGame.cpp" />
     <ClCompile Include="Box.cpp" />
     <ClCompile Include="Entity.cpp" />
     <ClCompile Include="Ground.cpp" />
+    <ClCompile Include="Player.cpp" />
+    <ClCompile Include="Puck.cpp" />
+    <ClCompile Include="Vector2d.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="2DPhysicsGame1.rc" />
