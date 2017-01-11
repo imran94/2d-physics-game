@@ -41,6 +41,8 @@ void Puck::draw()
 	window->draw(sprite);
 }
 
+SoundManager sound;
+
 void Puck::update()
 {
 	x += velocity.i *= 0.98f;
@@ -51,6 +53,7 @@ void Puck::update()
 	{
 		velocity.i = std::abs(velocity.i);
 		x = radius;
+		sound.PlayEdgeSound();
 	}
 
 	// Bounce off right wall
@@ -58,6 +61,7 @@ void Puck::update()
 	{
 		velocity.i = -std::abs(velocity.i);
 		x = WINDOW_WIDTH - radius;
+		sound.PlayEdgeSound();
 	}
 
 	// Bounce off top
@@ -65,6 +69,7 @@ void Puck::update()
 	{
 		velocity.j = std::abs(velocity.j);
 		y = radius;
+		sound.PlayEdgeSound();
 	}
 
 	// Bounce off bottom
@@ -72,19 +77,21 @@ void Puck::update()
 	{
 		velocity.j = -std::abs(velocity.j);
 		y = WINDOW_HEIGHT - radius;
+		sound.PlayEdgeSound();
 	}
-
 	sprite.setPosition(x, y);
 }
 
 bool Puck::checkTopGoal()
 {
 	return y <= radius && x >= leftBound && x <= rightBound;
+	sound.PlayGoalSound();
 }
 
 bool Puck::checkBottomGoal()
 {
 	return y >= window->getSize().y && x >= leftBound && x <= rightBound;
+	sound.PlayGoalSound();
 }
 
 void Puck::reset()
@@ -101,6 +108,7 @@ bool Puck::checkCollision(Player p)
 	if (std::pow(x - p.x, 2) + std::pow(y - p.y, 2)
 		<= std::pow(p.radius + radius, 2))
 	{
+		sound.PlayPlayerSound();
 		Vector2d collisionDirection(x - p.x, y - p.y);
 		velocity = p.velocity.proj(collisionDirection).plus(velocity.proj(collisionDirection).times(-1)
 			.plus(velocity.proj(Vector2d(collisionDirection.j, -collisionDirection.i)))).times(0.9);

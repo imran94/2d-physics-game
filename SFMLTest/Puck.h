@@ -6,6 +6,7 @@
 #include "Vector2d.h"
 #include <SFML/Graphics.hpp>
 #include "Player.h"
+#include "SoundManager.h"
 
 class Puck
 {

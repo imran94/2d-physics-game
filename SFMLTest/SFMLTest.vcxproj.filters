@@ -45,6 +45,9 @@
     <ClInclude Include="Constants.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SoundManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="2DPhysicsGame.cpp">
@@ -68,6 +71,9 @@
     <ClCompile Include="Puck.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SoundManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="2DPhysicsGame1.rc">
@@ -87,5 +93,16 @@
     <Image Include="Assets\Texture\groundtexture2.bmp">
       <Filter>Resource Files</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\Audio\EdgeHit.ogg">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\Audio\Goal.ogg">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Assets\Audio\PlayerHit.ogg">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
