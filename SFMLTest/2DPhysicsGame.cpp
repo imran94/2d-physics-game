@@ -50,7 +50,7 @@ void update(sf::RenderWindow &window, Player &player1, AIPlayer &player2, Puck &
 
 int main()
 {
-	sf::RenderWindow window(sf::VideoMode(320, 480, 32), "Bomb Survival");
+	sf::RenderWindow window(sf::VideoMode(320, 480, 32), "Air Hockey");
 
 	window.setFramerateLimit(60);
 
